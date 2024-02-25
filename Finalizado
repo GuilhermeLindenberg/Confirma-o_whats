@@ -1,0 +1,32 @@
+import openpyxl
+from urllib.parse import quote
+import webbrowser
+workbook_df = openpyxl.load_workbook('clientes.xlsx')
+pagina_clientes = workbook_df ['Planilha1']
+from time import sleep
+import pyautogui
+
+# Abrindo web.whatsapp no browser
+webbrowser.open('https://web.whatsapp.com/')
+sleep(30)
+
+# Salvando dados necessários da planilha
+for linha in pagina_clientes.iter_rows(min_row=2):
+    nome = linha[0].value
+    telefone = linha[1].value
+    data_agendamento = linha[2].value
+    turno_agendamento = linha[3].value
+    mensagem =f'Olá {nome}! Me chamo Pedro e trabalho na Sumicity Giga+. Consta em nosso sistema uma visita agendada para {data_agendamento.strftime("%d/%m/%Y")} no turno da {turno_agendamento}. Gostaria de saber se podemos dar continuidade nesta visita. Vocês estarão no local?'
+    
+    try:
+        link_mensagem = f'https://web.whatsapp.com/send?phone={telefone}&text={quote(mensagem)}'
+        webbrowser.open(link_mensagem)
+        sleep(10)
+        seta = pyautogui.press('enter')
+        sleep(5)
+        pyautogui.hotkey('ctrl','w')
+        sleep(5)
+    except:
+        print(f'Não foi possível enviar mensagem para {nome}.')
+        with open('erros.csv','a',newline='',encoding='utf-6=8') as arquivo:
+            arquivo.write(f'{nome},{telefone}')

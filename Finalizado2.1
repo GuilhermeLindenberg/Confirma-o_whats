@@ -5,18 +5,21 @@ from time import sleep
 import pyautogui
 
 # Acessando planilha e setando a aba será usada
-workbook_df = openpyxl.load_workbook('planilhas/clientes.xlsx')
-pagina_clientes = workbook_df['Plan1']
+workbook_df = openpyxl.load_workbook('Agenda 28-03 - Copia.xlsx')
+pagina_clientes = workbook_df['Planilha2']
 
 # Abrindo web.whatsapp no browser
 webbrowser.open('https://web.whatsapp.com/')
-sleep(30)
+sleep(7)
+
+tarde = '*(13:00 as 18:00)*'
+manha = '*(08:00 as 12:00)*'
 
 # Salvando dados necessários da planilha
 for linha in pagina_clientes.iter_rows(min_row=2):
     nome = linha[0].value  # Nome do cliente
-    telefone = linha[1].value  # Número de contato
-    contatos2 = linha[4].value  # Verificando se há mais um contato
+    telefone = linha[3].value  # Número de contato
+    contatos2 = linha[6].value  # Verificando se há mais um contato
 
     if contatos2:
         telefones = [telefone, contatos2]
@@ -24,9 +27,22 @@ for linha in pagina_clientes.iter_rows(min_row=2):
         telefones = [telefone]
 
     for telefone_cliente in telefones:
-        data_agendamento = linha[2].value
-        turno_agendamento = linha[3].value
-        mensagem = f'Olá {nome}! Me chamo Pedro e trabalho na Sumicity Giga+. Consta em nosso sistema uma visita agendada para {data_agendamento.strftime("%d/%m/%Y")} no turno da {turno_agendamento}. Gostaria de saber se podemos dar continuidade nesta visita. Vocês estarão no local?'
+        data_agendamento = linha[1].value
+        turno_agendamento = linha[2].value
+
+        print(f"Turno de agendamento para {nome}: '{turno_agendamento}'")  # Depuração
+
+        # Determinando o turno de agendamento na mensagem
+        turno_mensagem = f'no período da {turno_agendamento}'
+
+        # Adicionando a variável tarde ou manha baseado no turno de agendamento
+        if turno_agendamento.upper().strip() == 'TARDE':
+            turno_mensagem += f' {tarde}'
+        else:
+            turno_mensagem += f' {manha}'
+
+        # Construindo a mensagem com o turno de agendamento e horário correspondente
+        mensagem = f'Prezado(a), {nome}. Tudo bom? \n\n Sou assistente virtual de agendamento Giga+(Sumicity). \nEspero que esteja tudo bem!\nBuscando a melhor experiência possível com nossos serviços de atendimento à você cliente,\ngostariamos de confirmar o seu agendamento para o dia *{data_agendamento.strftime("%d/%m/%Y")}* {turno_mensagem} \n\nPor favor nos confirme com: \n\n1 - *SIM* \n2 - *NÃO* \n\nNosso sistema reconhece automaticamente a confirmação 1 - *SIM* e sua agenda será confirmada.\n\nEm caso de alteração favor enviar 2 - *NÃO*, com o *novo dia desejado e turno*, manhã(08:00 as 12:00) \nou tarde (13:00 as 18:00).\n\n Avaliaremos a disponibilidade e daremos o retorno em breve.'
 
         try:
             link_mensagem = f'https://web.whatsapp.com/send?phone={telefone_cliente}&text={quote(mensagem)}'
